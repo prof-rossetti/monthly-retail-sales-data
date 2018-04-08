@@ -86,7 +86,7 @@ end
 # CAPTURE USER INPUTS
 #
 
-if ENV.fetch("SCRIPT_ENV") == "test"
+if ENV.fetch("SCRIPT_ENV", "development") == "test"
   response = "201803"
 else
   cli = HighLine.new
