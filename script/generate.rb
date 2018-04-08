@@ -78,6 +78,10 @@ PRODUCTS = [
   }
 ]
 
+#
+# CAPTURE USER INPUTS
+#
+
 if ENV.fetch("SCRIPT_ENV") == "test"
   response = "201803"
 else
@@ -91,31 +95,40 @@ month_end = month_beg.end_of_month
 puts "MONTH NUM: #{month}"
 puts "BEGIN: #{month_beg.to_s}"
 puts "END: #{month_end.to_s}"
-
 days = (month_beg .. month_end).to_a
-days.each do |day|
-  puts "#{day.to_s}"
 
-  PRODUCTS.each do |product|
-    units = product[:months_in_season].include?(month) ? product[:avg_sold_per_month_in_season] : product[:avg_sold_per_month]
-    units = rand(units)
+#
+# WRITE DATA TO CSV
+#
 
-    case day.wday
-    when 6,0 # weekend days
-      units = units * 2
-    when 5 # fridays
-      units = units * 1.5
+csv_filepath = "./data/sales-#{response}.csv"
+headers = ["date", "product", "unit price", "units sold", "sales price"]
+
+FileUtils.rm_rf(csv_filepath)
+
+CSV.open(csv_filepath, "w", :write_headers=> true, :headers => headers) do |csv|
+  days.each do |day|
+    puts "#{day.to_s}"
+    PRODUCTS.each do |product|
+      units = product[:months_in_season].include?(month) ? product[:avg_sold_per_month_in_season] : product[:avg_sold_per_month]
+
+      case day.wday
+      when 6,0 # weekend days
+        units = units * 2
+      when 5 # fridays
+        units = units * 1.5
+      end
+
+      units = rand(units)
+      units = units / 30
+      units = units.to_i
+
+      if units > 0
+        puts "   + #{product[:name]} (#{units})"
+
+        sales_usd = (product[:price] * units).to_f.round(2)
+        csv << [day.to_s, product[:name], product[:price], units, sales_usd]
+      end
     end
-
-    units = units / 30
-    units = units.to_i
-
-    puts "   + #{product[:name]} (#{units})"
   end
 end
-
-#CSV.open(csv_filepath, "w", :write_headers=> true, :headers => headers) do |csv|
-#  rankings.each do |ranking|
-#    csv << [1,2,3,4,5]
-#  end
-#end
