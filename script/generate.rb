@@ -78,6 +78,10 @@ PRODUCTS = [
   }
 ]
 
+def format_usd(numeric)
+  return sprintf('%.2f', numeric)
+end
+
 #
 # CAPTURE USER INPUTS
 #
@@ -126,8 +130,9 @@ CSV.open(csv_filepath, "w", :write_headers=> true, :headers => headers) do |csv|
       if units > 0
         puts "   + #{product[:name]} (#{units})"
 
-        sales_usd = (product[:price] * units).to_f.round(2)
-        csv << [day.to_s, product[:name], product[:price], units, sales_usd]
+        sales_usd = format_usd(product[:price] * units)
+        price_usd = format_usd(product[:price])
+        csv << [day.to_s, product[:name], price_usd, units, sales_usd]
       end
     end
   end
